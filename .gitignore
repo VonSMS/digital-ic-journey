@@ -1,0 +1,21 @@
+# Simulation outputs
+sim/
+*.vcd
+*.fst
+*.lxt
+*.out
+*.vvp
+
+# Python
+__pycache__/
+.pytest_cache/
+.venv/
+
+# Editor / OS
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Temporary document copy made during planning extraction
+*.readcopy.docx
+
