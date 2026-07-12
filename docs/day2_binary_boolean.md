@@ -208,7 +208,7 @@ Common Boolean operators:
 | --- | --- | --- |
 | `~A` | NOT | Invert A |
 | `A & B` | AND | 1 only if both inputs are 1 |
-| `A | B` | OR | 1 if at least one input is 1 |
+| `A \| B` | OR | 1 if at least one input is 1 |
 | `A ^ B` | XOR | 1 if inputs are different |
 
 In Verilog, these same symbols are often used for bitwise logic:
@@ -293,16 +293,16 @@ NOR means NOT OR.
 
 | Law | Expression |
 | --- | --- |
-| Identity | `A & 1 = A`, `A | 0 = A` |
-| Null | `A & 0 = 0`, `A | 1 = 1` |
-| Idempotent | `A & A = A`, `A | A = A` |
-| Complement | `A & ~A = 0`, `A | ~A = 1` |
+| Identity | `A & 1 = A`, `A \| 0 = A` |
+| Null | `A & 0 = 0`, `A \| 1 = 1` |
+| Idempotent | `A & A = A`, `A \| A = A` |
+| Complement | `A & ~A = 0`, `A \| ~A = 1` |
 | Double negation | `~~A = A` |
-| Commutative | `A & B = B & A`, `A | B = B | A` |
+| Commutative | `A & B = B & A`, `A \| B = B \| A` |
 | Associative | `(A & B) & C = A & (B & C)` |
-| Distributive | `A & (B | C) = (A & B) | (A & C)` |
-| De Morgan | `~(A & B) = ~A | ~B` |
-| De Morgan | `~(A | B) = ~A & ~B` |
+| Distributive | `A & (B \| C) = (A & B) \| (A & C)` |
+| De Morgan | `~(A & B) = ~A \| ~B` |
+| De Morgan | `~(A \| B) = ~A & ~B` |
 
 ## 8. Boolean Simplification Examples
 
