@@ -1,69 +1,129 @@
 # Day 1 Setup Notes
 
-日期：2026-07-11
+Date: 2026-07-11
 
-## 今日目标
+## Objectives
 
-1. 建立本地学习仓库。
-2. 检查 Git、Python、GCC、Icarus/Verilator、GTKWave、Yosys 是否可用。
-3. 明确缺失工具的安装路线。
-4. 形成第一周项目目录。
+1. Create a local learning repository.
+2. Install and verify the basic digital IC toolchain.
+3. Understand the role of MSYS2 UCRT64 on Windows.
+4. Configure Windows PATH so the tools can also be called from PowerShell.
+5. Prepare the project structure for Week 1.
 
-## 当前检查结果
+## Final Tool Status
 
-Codex 检查到：系统 PATH 中暂时找不到 `git`、`python`、`gcc`、`iverilog`、`verilator`、`gtkwave`、`yosys`、`gh`。
-
-Codex 自带运行环境中可用：
-
-- Git 2.53.0
-- Python 3.12.13
-
-这说明今天可以先完成仓库搭建；系统级工具需要继续安装并加入 PATH。
-
-## 推荐安装路线
-
-Windows 上最稳的路线是安装 MSYS2，然后用它安装硬件工具链：
-
-1. 安装 MSYS2：https://www.msys2.org/
-2. 打开 "MSYS2 UCRT64" 终端。
-3. 更新包管理器：
-
-```bash
-pacman -Syu
-```
-
-4. 关闭窗口后重新打开 "MSYS2 UCRT64"，继续：
-
-```bash
-pacman -S --needed git mingw-w64-ucrt-x86_64-python mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-iverilog mingw-w64-ucrt-x86_64-gtkwave mingw-w64-ucrt-x86_64-yosys
-```
-
-5. 把 MSYS2 UCRT64 的 bin 目录加入 Windows PATH，通常是：
+The following tools were installed and verified:
 
 ```text
-C:\msys64\ucrt64\bin
-C:\msys64\usr\bin
+Git             OK
+Python          OK, available through py
+GCC             OK
+Icarus Verilog  OK
+GTKWave         OK
+Yosys           OK
+Verilator       skipped for now
 ```
 
-6. 重新打开 PowerShell，运行：
+Verilator is not required for Week 1. The initial RTL exercises can be completed with Icarus Verilog, GTKWave, and Yosys.
+
+## MSYS2 UCRT64
+
+MSYS2 is a Unix-like development toolbox for Windows. It provides a terminal environment, the `pacman` package manager, and access to many open-source engineering tools.
+
+UCRT64 means:
+
+```text
+UCRT  = Universal C Runtime
+64    = 64-bit Windows environment
+```
+
+For this project, MSYS2 UCRT64 is the main toolchain environment. The tools are installed under:
+
+```text
+D:\msys64\ucrt64\bin
+D:\msys64\usr\bin
+```
+
+These directories were added to Windows PATH so that PowerShell and VS Code terminals can find the tools directly.
+
+## Installed Packages
+
+The core packages were installed with:
+
+```bash
+pacman -S --needed git mingw-w64-ucrt-x86_64-python mingw-w64-ucrt-x86_64-gcc
+pacman -S --needed mingw-w64-ucrt-x86_64-iverilog mingw-w64-ucrt-x86_64-gtkwave mingw-w64-ucrt-x86_64-yosys
+```
+
+## Verification Commands
+
+In PowerShell, the main checks are:
 
 ```powershell
-.\scripts\check_tools.ps1
+git --version
+py --version
+gcc --version
+iverilog -V
+gtkwave --version
+yosys -V
 ```
 
-## GitHub 仓库
+The repository also includes a helper script:
 
-本地仓库建好后，再创建 GitHub 远程仓库。推荐仓库名：
+```powershell
+cd <repo-root>
+powershell -ExecutionPolicy Bypass -File .\scripts\check_tools.ps1
+```
+
+## Repository
+
+The local repository is:
 
 ```text
 digital-ic-journey
 ```
 
-如果暂时没有 GitHub CLI，可以先在 GitHub 网页新建空仓库，然后在本地运行：
+The repository uses the `main` branch. The initial files are:
 
-```powershell
-git remote add origin https://github.com/<your-username>/digital-ic-journey.git
-git branch -M main
-git push -u origin main
+```text
+README.md
+docs/day1_setup.md
+scripts/check_tools.ps1
+rtl/
+tb/
+sim/
+.gitignore
 ```
 
+## GitHub Remote
+
+After the local commit, the next optional step is to publish the repository to GitHub.
+
+Recommended repository name:
+
+```text
+digital-ic-journey
+```
+
+If using GitHub Desktop:
+
+1. Add the local repository.
+2. Confirm the branch is `main`.
+3. Commit any remaining local changes.
+4. Click `Publish repository`.
+5. Choose whether the repository should be public or private.
+
+## Day 1 Result
+
+Day 1 established the basic engineering workflow:
+
+```text
+write RTL
+simulate with Icarus Verilog
+inspect waveforms with GTKWave
+analyze hardware with Yosys
+use Python for automation and golden models
+track progress with Git
+```
+
+This is the foundation for the Week 1 digital logic exercises.
