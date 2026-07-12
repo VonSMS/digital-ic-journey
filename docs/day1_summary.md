@@ -20,7 +20,7 @@ Date: 2026.7.12
 
 3. Created a local and an online project repository
 ```text
-C:\Users\14138\Documents\IC入门\digital-ic-journey
+C:\Users\14138\Documents\IC_design_project_2026\digital-ic-journey
 ```
 Structure
 ```text

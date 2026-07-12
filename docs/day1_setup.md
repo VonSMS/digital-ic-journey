@@ -80,7 +80,7 @@ powershell -ExecutionPolicy Bypass -File .\scripts\check_tools.ps1
 The local repository is:
 
 ```text
-digital-ic-journey
+C:\Users\14138\Documents\IC_design_project_2026\digital-ic-journey
 ```
 
 The repository uses the `main` branch. The initial files are:
