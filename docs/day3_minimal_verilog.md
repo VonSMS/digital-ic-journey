@@ -154,7 +154,7 @@ These are the operators from Day 2 Boolean logic:
 | --- | --- | --- |
 | `~` | NOT | `assign y = ~a;` |
 | `&` | AND | `assign y = a & b;` |
-| `|` | OR | `assign y = a | b;` |
+| `\|` | OR | `assign y = a | b;` |
 | `^` | XOR | `assign y = a ^ b;` |
 
 Example module:
