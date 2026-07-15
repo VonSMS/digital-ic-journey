@@ -9,7 +9,7 @@ Date:2026.7.12
 3. Interpret signed values using two's complement
 4. build truth tables for AND, OR, XOR, NAND, NOR
 5. Proof and simplify Boolean expressions using Venn diagrams
-6. Creted `setup.sh` to eliminate absolute path tracking by using
+6. Created `setup.sh` to eliminate hardcoded absolute path
 
 ```bash
 export PROJ_ROOT=$(pwd)
