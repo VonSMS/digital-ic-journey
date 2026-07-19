@@ -10,8 +10,11 @@ Date: 2026.7.19
 5. How module ports connect signals, like `.sum(sum[0])`
 
 ## What I did
-1. implemented half-adder
-2. implemented full-adder
+1. implemented half-adder rtl
+2. implemented full-adder rtl
 3. 2-bit ripple-carry adder using `fa0` and `fa1`
 4. 3-bit ripple-carry adder using `fa0`, `fa1` and `fa2`
-5. self-checking testbench loops for input combinations
+5. self-checking testbench loops for all input combinations of `a` `b` `cin`
+```text
+by changing loop condition to `i < 2^n` and expected sum width to `[n-1 : 0]` for a n-bit signal.
+```
