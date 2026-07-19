@@ -8,6 +8,7 @@ Date: 2026.7.19
 3. How `[1 ：0]` `[2 : 0]`, and bit indexing work
 4. How `assign` represents continuously active combinational logic
 5. How module ports connect signals, like `.sum(sum[0])`
+6. How dut means Device Under Test
 
 ## What I did
 1. implemented half-adder rtl
@@ -16,5 +17,5 @@ Date: 2026.7.19
 4. 3-bit ripple-carry adder using `fa0`, `fa1` and `fa2`
 5. self-checking testbench loops for all input combinations of `a` `b` `cin`
 ```text
-by changing loop condition to `i < 2^n` and expected sum width to `[n-1 : 0]` for a n-bit signal.
+by changing loop condition to i < 2^n and expected sum width to [n : 0] for a n-bit signal.
 ```
