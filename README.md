@@ -36,28 +36,3 @@ Before university begins, the goal is to complete a small but readable RTL proje
 +-- sim/           # Simulation outputs; usually not committed
 +-- README.md
 ```
-
-## Day 1 Tool Check
-
-Run the tool check from PowerShell:
-
-```powershell
-cd <repo-root>
-powershell -ExecutionPolicy Bypass -File .\scripts\check_tools.ps1
-```
-
-Expected Day 1 status:
-
-- Git: OK
-- Python: OK, available through `py`
-- GCC: OK
-- Icarus Verilog: OK
-- GTKWave: OK
-- Yosys: OK
-- Verilator: skipped for now
-
-The first-week workflow will mainly use:
-
-```text
-Icarus Verilog + GTKWave + Yosys
-```

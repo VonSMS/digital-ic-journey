@@ -19,13 +19,21 @@ reg       rca_cin;
 wire [1:0] rca_sum;
 wire       rca_cout;
 
+reg [2:0] trca_a;
+reg [2:0] trca_b;
+reg       trca_cin;
+wire [2:0] trca_sum;
+wire       trca_cout;
+
 integer i;
 integer j;
 integer k;
+
 integer errors;
 reg expected_sum;
 reg expected_carry;
 reg [2:0] expected_total;
+reg [3:0] expected_3total;
 
 half_adder dut_half_adder (
     .a(ha_a),
@@ -48,6 +56,14 @@ ripple_carry_adder_2bit dut_ripple_carry_adder_2bit (
     .cin(rca_cin),
     .sum(rca_sum),
     .cout(rca_cout)
+);
+
+ripple_carry_adder_3bit dut_ripple_carry_adder_3bit (
+    .a(trca_a),
+    .b(trca_b),
+    .cin(trca_cin),
+    .sum(trca_sum),
+    .cout(trca_cout)
 );
 
 initial begin
@@ -98,8 +114,8 @@ initial begin
 
     $display("");
     $display("Testing ripple_carry_adder_2bit");
-    $display("a  b  cin | cout sum");
-    $display("--------------------");
+    $display(" a   b  cin | cout sum");
+    $display("----------------------");
 
     for (i = 0; i < 4; i = i + 1) begin
         for (j = 0; j < 4; j = j + 1) begin
@@ -111,12 +127,38 @@ initial begin
 
                 expected_total = rca_a + rca_b + rca_cin;
 
-                $display("%b %b  %b  |  %b   %b", rca_a, rca_b, rca_cin, rca_cout, rca_sum);
+                $display("%02b  %02b  %b   |   %b   %02b", rca_a, rca_b, rca_cin, rca_cout, rca_sum);
 
                 if ({rca_cout, rca_sum} !== expected_total) begin
                     $display("ERROR ripple_carry_adder_2bit: a=%b b=%b cin=%b expected=%b got=%b",
                              rca_a, rca_b, rca_cin, expected_total, {rca_cout, rca_sum});
                     errors = errors + 1;
+                end
+            end
+        end
+    end
+
+    $display("");
+    $display("Testing ripple_carry_adder_3bit");
+    $display(" a    b   cin | cout  sum");
+    $display("--------------------------");
+
+    for (i = 0; i < 8; i = i + 1) begin
+        for (j = 0; j < 8; j = j + 1) begin
+            for (k = 0; k < 2; k = k + 1) begin
+                trca_a   = i[2:0];
+                trca_b   = j[2:0];
+                trca_cin = k[0];
+                #10;
+
+                expected_3total = trca_a + trca_b + trca_cin;
+
+                $display("%03b  %03b   %b  |   %b   %03b", trca_a, trca_b, trca_cin, trca_cout, trca_sum);
+
+                if ({trca_cout, trca_sum} !== expected_3total) begin
+                    $display("ERROR ripple_carry_adder_3bit: a=%b b=%b cin=%b expected=%b got=%b",
+                             trca_a, trca_b, trca_cin, expected_3total, {trca_cout, trca_sum});
+                             errors = errors + 1;
                 end
             end
         end

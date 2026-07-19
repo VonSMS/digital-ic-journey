@@ -164,12 +164,12 @@ That means decimal 5.
 
 ## 6. Commands
 
-From the repository root:
+From the MSYS2 UCRT64 terminal:
 
-```powershell
-cd C:\Users\14138\Documents\IC_design_project_2026\digital-ic-journey
-iverilog -o .\sim\adders.vvp .\rtl\half_adder.v .\rtl\full_adder.v .\tb\tb_adders.v
-vvp .\sim\adders.vvp
+```bash
+cd /c/Users/14138/Documents/IC_design_project_2026/digital-ic-journey
+iverilog -o ./sim/adders.vvp ./rtl/half_adder.v ./rtl/full_adder.v ./tb/tb_adders.v
+vvp ./sim/adders.vvp
 ```
 
 Expected final line:
@@ -186,8 +186,8 @@ sim/adders.vcd
 
 Open it in GTKWave:
 
-```powershell
-gtkwave .\sim\adders.vcd
+```bash
+gtkwave ./sim/adders.vcd
 ```
 
 ## 7. GTKWave Practice
