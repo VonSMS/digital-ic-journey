@@ -15,7 +15,10 @@ Date: 2026.7.19
 2. implemented full-adder rtl
 3. 2-bit ripple-carry adder using `fa0` and `fa1`
 4. 3-bit ripple-carry adder using `fa0`, `fa1` and `fa2`
-5. self-checking testbench loops for all input combinations of `a` `b` `cin`
+5. self-checking testbench loops for all input combinations of `a` `b` `cin` (parameterized adder)
 ```text
-by changing loop condition to i < 2^n and expected sum width to [n : 0] for a n-bit signal.
+input [n-1 : 0]
+loop condition i < 2^n
+expected sum width (output) [n : 0] 
+for a n-bit signal.
 ```

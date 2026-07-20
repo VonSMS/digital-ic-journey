@@ -14,4 +14,4 @@ docs/day3_minimal_verilog.md
 4. Created nand and nor gates in simple_logic.v
 
 ## Problems and Solutions
-1. Debugged Verilog syntax error
+1. Debugged Verilog syntax error.
