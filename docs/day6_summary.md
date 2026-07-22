@@ -11,6 +11,7 @@ Sequential logic combines combinational logic and storage elements that keep the
 2. How D flip flop samples `d` (the next data) at `negedge` and update `q` at `posedge`
 3. The difference between `posedge` and `negedge`
 4. Synchronus reset and Asychronus reset
+
 Synchronus
 ```verilog
 always @(posedge clk)
@@ -20,7 +21,8 @@ Asychronus
 always @(posedge clk or posedge reset)
 ```
 5. RTL patterns and data flow
-The pattern is 
+
+pattern：
 ```verilog
 always @(posedge clk or posedge reset) begin
     if (reset)
