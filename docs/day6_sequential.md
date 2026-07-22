@@ -1,6 +1,5 @@
 # Day 6: Sequential Logic — Flip-Flops, Registers, and Counters
 
-> The requested filename is `day5_sequential.md`, but this lesson is Day 6 of the learning plan.
 
 ## Learning goals
 
