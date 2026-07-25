@@ -3,14 +3,14 @@
 Date: 2026.7.25
 
 ## What I learned
-1. ALU
+### 1. ALU
 core ALU functions include
 ```text
 ADD, SUB, AND, OR, XOR, PASS A, invalid opcode handling
 ```
 `multiply` and `divide` is done by shifting and adding.
 
-2. Flags
+### 2. Flags
 I implemented and studied
 ```text
 zero, carry, sub carry, overflow, negative
@@ -19,7 +19,7 @@ zero, carry, sub carry, overflow, negative
 
 `overflow`: signed result cannot fit in the range -8 to +7
 
-3. Verification
+### 3. Verification
 I conducted direcrt normal and boundary tests.
 The self-checking bench uses:
 A model to calculate expected outputs
@@ -32,7 +32,8 @@ test_a → DUT input a
 ```
 The model returns model_result through its task output argument into expected_result.
 
-4. Debugging practice & Optional practice edits
+### 4. Debugging practice & Optional practice edits
+
 I extended the opcode space with
 ```verilog
 OP_NOT   = 110 → result = ~a
