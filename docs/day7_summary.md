@@ -9,13 +9,16 @@ core ALU functions include
 ADD, SUB, AND, OR, XOR, PASS A, invalid opcode handling
 ```
 `multiply` and `divide` is done by shifting and adding.
+
 2. Flags
 I implemented and studied
 ```text
 zero, carry, sub carry, overflow, negative
 ```
 `sub carry`: 1 means no borrow, 0 means borrow
+
 `overflow`: signed result cannot fit in the range -8 to +7
+
 3. Verification
 I conducted direcrt normal and boundary tests.
 The self-checking bench uses:
@@ -28,6 +31,7 @@ test_a → DUT input a
        → model input model_a
 ```
 The model returns model_result through its task output argument into expected_result.
+
 4. Debugging practice & Optional practice edits
 I extended the opcode space with
 ```verilog
