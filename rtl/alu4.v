@@ -7,7 +7,8 @@ module alu4 (
     output reg [3:0] result,
     output           zero,
     output reg       carry,
-    output reg       overflow
+    output reg       overflow,
+    output reg       negative
 );
 
 localparam OP_ADD    = 3'b000;
@@ -16,6 +17,8 @@ localparam OP_AND    = 3'b010;
 localparam OP_OR     = 3'b011;
 localparam OP_XOR    = 3'b100;
 localparam OP_PASS_A = 3'b101;
+localparam OP_NOT    = 3'b110;
+localparam OP_APLUS  = 3'b111;
 
 wire [4:0] add_full;
 wire [4:0] sub_full;
@@ -25,14 +28,21 @@ wire [3:0] and_result;
 wire [3:0] or_result;
 wire [3:0] xor_result;
 wire [3:0] pass_a_result;
+wire [3:0] not_result;
+wire [3:0] aplus_result;
+wire [4:0] aplus_full;
 
 assign add_full = {1'b0, a} + {1'b0, b};
 assign sub_full = {1'b0, a} + {1'b0, ~b} + 5'b00001;
+assign aplus_full = {1'b0, a} + 5'b00001;
 
+assign aplus_result  = aplus_full[3:0];
 assign add_result    = add_full[3:0];
 assign sub_result    = sub_full[3:0];
 assign and_result    = a & b;
 assign or_result     = a | b;
+assign not_result    = ~ a;
+
 `ifdef INTENTIONAL_ALU_BUG
 // Teaching bug: XOR was accidentally wired as OR. The testbench should catch it.
 assign xor_result    = a | b;
@@ -42,6 +52,7 @@ assign xor_result    = a ^ b;
 assign pass_a_result = a;
 
 assign zero = (result == 4'b0000);
+assign negative = (result[3]);
 
 always @(*) begin
     result = 4'b0000;
@@ -70,6 +81,14 @@ always @(*) begin
         end
         OP_PASS_A: begin
             result = pass_a_result;
+        end
+        OP_NOT: begin
+            result = not_result;
+        end
+        OP_APLUS: begin
+            result = aplus_result;
+            carry  = aplus_full[4];
+            overflow = (a[3] == 1'b0) && (result[3] != a[3]);
         end
         default: begin
             result = 4'b0000;
