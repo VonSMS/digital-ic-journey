@@ -12,9 +12,8 @@ verification. Week 2 builds a register file, controller FSM, and tiny execution
 unit. Signed INT8 multiplier and MAC work begins in Week 3.
 
 - Current verified status: [`docs/PROGRESS.md`](docs/PROGRESS.md)
-- Cross-conversation workflow: [`docs/WORKFLOW.md`](docs/WORKFLOW.md)
 - Week 2 hands-on plan: [`docs/week2_plan.md`](docs/week2_plan.md)
-- Codex repository guidance: [`AGENTS.md`](AGENTS.md)
+- Codex guidance and conversation handoff: [`AGENTS.md`](AGENTS.md)
 
 ## Goal
 
@@ -71,5 +70,5 @@ Expected final result:
 PASS: all ALU tests passed
 ```
 
-See [`docs/WORKFLOW.md`](docs/WORKFLOW.md) for the complete Week 1 regression
-commands and the handoff protocol for new conversations.
+For a new conversation, ask Codex to read `AGENTS.md`, `docs/PROGRESS.md`, Git
+status, and the relevant RTL/testbench before continuing.

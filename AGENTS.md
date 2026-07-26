@@ -6,8 +6,8 @@ This repository is a hands-on path toward digital IC design, AI hardware, and
 computer architecture, with later work in AI accelerators, RISC-V,
 hardware-software co-design, verification automation, and AI for EDA.
 
-Read `docs/PROGRESS.md` before working. Use `docs/WORKFLOW.md` when handing work
-between conversations.
+Read `docs/PROGRESS.md` before working; it is the source of truth for current
+status and the next action.
 
 ## Teaching Style
 
@@ -36,3 +36,6 @@ Before changes: read progress, inspect `git status`, and run the relevant baseli
 After changes: rerun the test and update `docs/PROGRESS.md` with the result, known
 issue, and one exact next action.
 
+For a new conversation, use: "Read AGENTS.md, docs/PROGRESS.md, git status, and
+the relevant RTL/testbench. Continue from the Exact Next Action and preserve user
+changes."

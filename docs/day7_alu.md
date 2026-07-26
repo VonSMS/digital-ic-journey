@@ -11,10 +11,10 @@ By the end, you should be able to explain:
 1. What an ALU does in a CPU or AI accelerator.
 2. How datapath values differ from control signals.
 3. How an opcode selects an operation.
-4. How ADD, SUB, AND, OR, XOR, and pass A are selected inside one module.
+4. How ADD, SUB, AND, OR, XOR, pass A, NOT A, and A+1 are selected inside one module.
 5. How subtraction uses two's complement.
 6. Why 4-bit arithmetic wraps.
-7. How zero, carry, and overflow flags are produced.
+7. How zero, carry, overflow, and negative flags are produced.
 8. Why unsigned carry and signed overflow are different ideas.
 9. How a mux selects the ALU result.
 10. How a self-checking testbench uses a golden model.
@@ -58,7 +58,7 @@ In this lab:
 | `a[3:0]`, `b[3:0]` | datapath operands |
 | `opcode[2:0]` | control signal |
 | `result[3:0]` | datapath output |
-| `zero`, `carry`, `overflow` | status flags derived from datapath result |
+| `zero`, `carry`, `overflow`, `negative` | status flags derived from datapath result |
 
 ## 3. Opcode selects the operation
 
@@ -72,7 +72,8 @@ An opcode is just a compact code for a choice.
 | `3'b011` | OR |
 | `3'b100` | XOR |
 | `3'b101` | pass A |
-| `3'b110`, `3'b111` | invalid, return zero in this lab |
+| `3'b110` | NOT A |
+| `3'b111` | A+1 |
 
 Internally, you can imagine the ALU computing several candidate results, then using a mux controlled by `opcode`:
 
@@ -83,7 +84,8 @@ and_result ------\
 or_result -------- mux selected by opcode ---> result
 xor_result ------/
 pass_a_result --/
-zero ----------/
+not_result ----/
+aplus_result -/
 ```
 
 The Verilog `case (opcode)` acts like that mux.
@@ -170,10 +172,10 @@ Open `rtl/alu4.v` and find:
 
 1. The opcode localparams.
 2. The 5-bit `add_full` and `sub_full` wires.
-3. The candidate datapath results: add, sub, and, or, xor, pass A.
+3. The candidate datapath results: add, sub, and, or, xor, pass A, NOT A, and A+1.
 4. The `case (opcode)` mux.
 5. The flag logic for ADD and SUB.
-6. The default invalid-opcode behavior.
+6. The continuous zero and negative flag logic.
 
 Explain the data flow in your own words before simulating:
 
@@ -187,7 +189,7 @@ Now answer: why is this ALU combinational even if a CPU places it between two re
 
 Write down your predictions before you run the simulation.
 
-| Case | Binary view | Unsigned view | Signed view | Predict result/carry/overflow/zero |
+| Case | Binary view | Unsigned view | Signed view | Predict result/carry/overflow/zero/negative |
 | --- | --- | --- | --- | --- |
 | `4'hF + 4'h1` | `1111 + 0001` | `15 + 1` | `-1 + 1` | ? |
 | `4'h7 + 4'h1` | `0111 + 0001` | `7 + 1` | `7 + 1` | ? |
@@ -271,7 +273,8 @@ Add these signals:
 5. `zero`
 6. `carry`
 7. `overflow`
-8. Optional internal DUT signals: `add_full`, `sub_full`, `add_result`, `sub_result`, `xor_result`
+8. `negative`
+9. Optional internal DUT signals: `add_full`, `sub_full`, `aplus_full`, `add_result`, `sub_result`, `xor_result`
 
 Set buses to Hex first, then switch to Binary for the three boundary cases.
 
@@ -281,7 +284,7 @@ Waveform questions:
 2. At `4'h7 + 4'h1`, why is `carry=0` but `overflow=1`?
 3. At `4'h8 - 4'h1`, why can the unsigned result look normal while signed overflow is high?
 4. Which opcode selects XOR? Which test catches XOR accidentally becoming OR?
-5. What do invalid opcodes produce in this lab?
+5. Which opcodes select NOT A and A+1? Why does NOT A ignore B?
 
 ## 13. Explain-back checklist
 
@@ -304,15 +307,14 @@ Why is the ALU combinational even when placed between registers?
 
 A strong answer mentions that the registers store values on clock edges, while the ALU itself continuously computes from its current inputs and opcode between those edges.
 
-## 14. Optional practice edits
+## 14. Completed practice extensions
 
-Try one at a time:
+The current RTL and golden model include:
 
-1. Add opcode `3'b110` for `~A`.
-2. Add opcode `3'b111` for `A + 1`.
-3. Change invalid opcodes to produce `4'hF` and update the golden model.
-4. Add a negative flag: `negative = result[3]`.
-5. Add loops to test all 16 x 16 input pairs for ADD and SUB.
+1. Opcode `3'b110` for `~A`.
+2. Opcode `3'b111` for `A + 1`.
+3. A negative flag: `negative = result[3]`.
+4. Exhaustive loops for all 16 x 16 ADD and SUB input pairs.
 
 The useful workflow is the same as day 6:
 

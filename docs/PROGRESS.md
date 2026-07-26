@@ -30,14 +30,10 @@ Last updated: 2026-07-26
 
 ## Known Issues
 
-- `docs/day7_alu.md` still describes opcodes `110/111` as invalid; RTL now uses
-  them for NOT A and A+1.
 - Some older modules warn about missing explicit time units.
-- Daily summary files have uncommitted user edits; preserve them.
 
 ## Exact Next Action
 
 Implement `rtl/decoder2to4.v` and an exhaustive self-checking testbench for all
 `enable x select` combinations. Predict outputs first, then debug one swapped
 one-hot output.
-

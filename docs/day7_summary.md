@@ -6,7 +6,7 @@ Date: 2026.7.25
 ### 1. ALU
 core ALU functions include
 ```text
-ADD, SUB, AND, OR, XOR, PASS A, invalid opcode handling
+ADD, SUB, AND, OR, XOR, PASS A, NOT A, A+1
 ```
 `multiply` and `divide` is done by shifting and adding.
 
