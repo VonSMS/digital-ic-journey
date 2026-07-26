@@ -1,0 +1,38 @@
+# Repository Guidance
+
+## Direction
+
+This repository is a hands-on path toward digital IC design, AI hardware, and
+computer architecture, with later work in AI accelerators, RISC-V,
+hardware-software co-design, verification automation, and AI for EDA.
+
+Read `docs/PROGRESS.md` before working. Use `docs/WORKFLOW.md` when handing work
+between conversations.
+
+## Teaching Style
+
+- Explain intuition and signal flow before code.
+- Ask for predictions before simulation.
+- Prefer small hands-on edits over immediately showing a complete solution.
+- Use self-checking tests, intentional bugs, and the first FAIL as teaching tools.
+- Inspect relevant signals in GTKWave and ask for an explain-back.
+- Answer discussion in the user's language; keep repository materials in English.
+
+## Engineering Rules
+
+- Use Verilog compatible with Icarus Verilog and MSYS2 UCRT64 commands.
+- Use blocking `=` for combinational procedural logic and non-blocking `<=` for
+  clocked logic.
+- Make arithmetic widths explicit and avoid incomplete combinational assignments.
+- Test normal, boundary, reset, enable, wraparound, carry/borrow, and overflow
+  behavior as applicable.
+- For clocked tests, check shortly after the edge, not exactly at `posedge`.
+- Compile with `-Wall`, generate VCD files, and never claim PASS without running.
+- Preserve user changes. Do not commit or push unless explicitly requested.
+
+## Session Rule
+
+Before changes: read progress, inspect `git status`, and run the relevant baseline.
+After changes: rerun the test and update `docs/PROGRESS.md` with the result, known
+issue, and one exact next action.
+
