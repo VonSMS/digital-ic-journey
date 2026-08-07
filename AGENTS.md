@@ -36,6 +36,11 @@ Before changes: read progress, inspect `git status`, and run the relevant baseli
 After changes: rerun the test and update `docs/PROGRESS.md` with the result, known
 issue, and one exact next action.
 
+Each learning day must have one unified Markdown file under `docs/` that contains
+that day's teaching notes, prediction prompts, hands-on tasks, debug exercise,
+commands, waveform inspection checklist, explain-back prompt, and completion
+criteria. Use that file as the teaching script and lab record for the day.
+
 For a new conversation, use: "Read AGENTS.md, docs/PROGRESS.md, git status, and
-the relevant RTL/testbench. Continue from the Exact Next Action and preserve user
-changes."
+the relevant RTL/testbench, then follow the unified Markdown file named by the
+Exact Next Action. Continue from the Exact Next Action and preserve user changes."
