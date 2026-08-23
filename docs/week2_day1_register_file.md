@@ -90,7 +90,7 @@ This design uses:
 
 - Asynchronous reset: reset clears the registers immediately.
 - Synchronous write: storage changes only at `posedge clk`.
-- Combinational read: read data follows the selected register value.
+- Combinational read: read data follows the selected register value immediately. No need to wait for posedge.
 
 Prediction examples:
 

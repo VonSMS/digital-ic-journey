@@ -8,7 +8,7 @@ module alu4 (
     output           zero,
     output reg       carry,
     output reg       overflow,
-    output reg       negative
+    output           negative
 );
 
 localparam OP_ADD    = 3'b000;

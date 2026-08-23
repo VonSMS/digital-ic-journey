@@ -1,51 +1,72 @@
-# Week 2 Day 2: Register File Verification Depth
+# Week 2 Day 2: Scoreboard Timing and Register File Verification
 
 Date: 2026-08-07
 
 ## Goal
 
-Deepen the verification for the 4x4 register file.
+Upgrade the existing register file testbench from basic directed checking into a
+more disciplined scoreboard-style verification exercise.
 
 By the end of the day, the learner should be able to explain:
 
 - Why a golden model is independent from the RTL.
-- Why a scoreboard records expected state across time.
-- The difference between directed tests and exhaustive tests.
-- Why clocked tests should check shortly after the clock edge.
-- How a same-address read/write behaves in this register file.
-- How to use the first failing self-check and GTKWave together.
+- Why the scoreboard must update at the same logical time as the hardware state.
+- Why checking at `posedge clk` can race the RTL.
+- How reset recovery differs from the first reset test.
+- How same-address read/write timing appears in the waveform.
+- How to debug a failing checker, not only a failing RTL implementation.
 
-## Intuition First
+## Starting Point
 
-A register file is a small addressed storage bank:
+Day 1 already built the 4x4 register file and a basic self-checking testbench.
+Do not repeat that work.
 
-```text
-write port: write_enable + write_addr + write_data + clk
-read port A: read_addr_a -> read_data_a
-read port B: read_addr_b -> read_data_b
-```
-
-The RTL stores real state in `r0`, `r1`, `r2`, and `r3`.
-
-The testbench should not trust that state. It keeps a separate expected copy:
-
-```verilog
-reg [3:0] expected_regs [0:3];
-```
-
-That expected array is the golden model. When the testbench applies a legal
-write, it updates `expected_regs`. When it reads, it compares DUT output
-against the expected array.
-
-This is the central verification habit:
+The current testbench already has:
 
 ```text
-DUT behavior is one story.
-Expected model is another story.
-The checker compares the two stories.
+expected_regs[0:3]
+check_read_a
+check_read_b
+check_read_pair
+apply_reset
+write_register
+disabled_write
+directed writes to r0/r1/r2/r3
+overwrite
+exhaustive 16 read-address pairs
 ```
 
-## Prediction Before Simulation
+Day 2 should keep that foundation and make the timing checks sharper.
+
+## Intuition First: The Scoreboard Is Also Timed Logic
+
+The RTL register file changes storage here:
+
+```text
+posedge clk
+```
+
+The scoreboard should update its expected state only after the testbench has
+observed that same logical write event.
+
+Bad mental model:
+
+```text
+I drove write_addr and write_data, so expected_regs should change immediately.
+```
+
+Correct mental model:
+
+```text
+I drove write_addr and write_data before the clock edge.
+The write becomes real at the clock edge.
+The checker compares shortly after the edge.
+```
+
+This matters because a verification bug can look like a hardware bug. A strong
+testbench must model both values and timing.
+
+## Prediction 1: Scoreboard Timing
 
 Assume the register file already contains:
 
@@ -80,6 +101,24 @@ Reason from timing:
 - If a read address points at the register being written, the visible read data
   changes after the stored register updates.
 
+## Prediction 2: Checker Bug
+
+Suppose the testbench accidentally updates the scoreboard too early:
+
+```verilog
+expected_regs[addr] = data;
+@(posedge clk);
+#1;
+check_read_pair("write completed");
+```
+
+Predict:
+
+```text
+Could this hide a bug, create a false failure, or both?
+Which value does the checker expect before the hardware has actually written?
+```
+
 ## Relevant Files
 
 Read these before editing:
@@ -92,19 +131,20 @@ docs/week2_day1_register_file.md
 
 ## Hands-On Plan
 
-Strengthen:
+Edit:
 
 ```text
 tb/tb_register_file4x4.v
 ```
 
-Keep:
+Usually keep:
 
 ```text
 rtl/register_file4x4.v
 ```
 
-The point of Day 2 is stronger verification, not a new RTL design.
+Day 2 is mainly a verification day. Only touch RTL if the intentional exercise
+temporarily requires it, and restore the correct RTL before completion.
 
 ## Required Testbench Features
 
@@ -115,49 +155,66 @@ The testbench must:
 - Maintain an independent `expected_regs[0:3]` golden model.
 - Use self-checking tasks that print the first failing mismatch clearly.
 - Check shortly after clock edges, not exactly at `posedge clk`.
+- Separate "drive inputs", "wait for hardware event", "update scoreboard", and
+  "check outputs" in the task structure.
 
 ## Required Test Cases
 
-Add or confirm coverage for:
+Confirm existing coverage for:
 
 - Reset clears all four registers.
 - Distinct writes to all four registers.
 - Exhaustive read of all 16 `read_addr_a` and `read_addr_b` address pairs.
 - Disabled write does not change storage.
 - Overwrite changes only the selected register.
+
+Add or strengthen coverage for:
+
 - Reset recovery clears old values and allows new writes afterward.
 - Same-address read/write timing.
+- A before-edge same-address read check that still expects the old value.
+- An after-edge same-address read check that expects the new value.
 
-## Intentional Bug Exercise
+## Intentional Bug Exercise: Checker Timing
 
-Introduce exactly one temporary RTL bug for debugging practice.
+Introduce exactly one temporary testbench bug for debugging practice.
 
-Suggested bug:
+Suggested bug: update the scoreboard before the clock edge in `write_register`
+or in a new same-address write task:
 
 ```verilog
-2'b10: r3 <= write_data;
-2'b11: r2 <= write_data;
+expected_regs[addr] = data;
+@(posedge clk);
+#1;
 ```
 
-This swaps the write destinations for `write_addr=2` and `write_addr=3`.
+Then add a before-edge read check for the same address.
 
 Expected learning:
 
-- The first FAIL should show a register holding the old value.
-- GTKWave should show that the write data went into the wrong internal register.
-- The read mux may still be correct; the bug is in the write decode.
+- The DUT can be correct while the testbench is wrong.
+- The first FAIL should point to an expected value that changed too early.
+- GTKWave should show the internal register still holding the old value before
+  the rising edge.
+- The fix is to update the scoreboard after the clocked write event, then check
+  after a small delay.
 
-After the learner inspects the first failure and waveform, restore the correct
-RTL:
+Correct task ordering:
 
 ```verilog
-2'b10: r2 <= write_data;
-2'b11: r3 <= write_data;
+@(negedge clk);
+write_enable = 1'b1;
+write_addr = addr;
+write_data = data;
+@(posedge clk);
+#1;
+expected_regs[addr] = data;
+check_read_pair("write completed");
 ```
 
 ## Same-Address Read/Write Timing
 
-Use a directed timing check like this:
+Add a dedicated directed timing check:
 
 ```text
 Start with r2 = 1010
@@ -172,6 +229,48 @@ Document the observed behavior:
 ```text
 The read port is combinational, so when the selected register changes at the
 clock edge, the read data follows shortly after the edge.
+```
+
+Useful testbench shape:
+
+```verilog
+task check_same_address_write_timing;
+    begin
+        // 1. Put a known old value in r2.
+        // 2. Select r2 on read port A.
+        // 3. Drive a new write to r2 before the edge.
+        // 4. Check old value before the edge.
+        // 5. Wait for posedge and #1.
+        // 6. Update scoreboard and check new value.
+    end
+endtask
+```
+
+## Reset Recovery
+
+Reset recovery is not the same as the first reset test.
+
+The first reset test asks:
+
+```text
+Does reset clear the power-up or initial state?
+```
+
+Reset recovery asks:
+
+```text
+After meaningful values have been written, can reset clear them and can the
+design work normally again afterward?
+```
+
+Required sequence:
+
+```text
+1. Write nonzero values into all registers.
+2. Assert reset and check all reads return 0000.
+3. Deassert reset.
+4. Write new values.
+5. Check all read-address pairs again.
 ```
 
 ## Commands
@@ -238,19 +337,41 @@ vvp sim\tb_register_file4x4.vvp
 After simulation and waveform inspection, explain in your own words:
 
 ```text
-The scoreboard changes when ____.
-The RTL registers change when ____.
+The scoreboard should update when ____.
+The RTL registers update when ____.
 The read ports update when ____.
+The intentional bug failed because ____.
 For same-address read/write, before the edge I saw ____ and after the edge I saw ____.
 ```
 
 ## Completion Criteria
 
 - The learner predicts same-address read/write behavior before simulation.
-- The testbench includes the required verification cases.
-- One intentional RTL bug is observed through the first FAIL.
+- The learner predicts what the early-scoreboard bug will do.
+- The testbench includes reset recovery and explicit same-address timing checks.
+- One intentional checker timing bug is observed through the first FAIL.
 - The bug is fixed after waveform inspection.
 - The focused register file test prints PASS.
 - The Week 1 and Week 2 regression is rerun.
 - `docs/PROGRESS.md` records verified progress, known issues, and exactly one
   Exact Next Action.
+
+## Result
+
+- Added `check_all_read_pairs` to reuse the exhaustive 16 read-address pair
+  coverage.
+- Added `check_same_address_write_timing` to check old data before the write
+  edge and new data after the write edge plus a small delay.
+- Added `check_reset_recovery` to write nonzero values, reset the register file,
+  confirm all reads return zero, then write and read new values afterward.
+- Intentional checker bug: `expected_regs[2]` was temporarily updated before
+  the write clock edge, causing the first failure to report
+  `expected=1111 actual=1010` before the hardware had written the new value.
+- Fix: moved the scoreboard update to after `@(posedge clk); #1;`, matching the
+  hardware write timing and stable read-check point.
+- Observed timing: for same-address read/write, the read port showed the old
+  value `1010` before the rising edge and the new value `1111` shortly after the
+  rising edge.
+- Verified result: focused `tb_register_file4x4.v` test PASS with 116 checks.
+- Regression result: Week 1 tests, decoder, and register file all reran
+  successfully.

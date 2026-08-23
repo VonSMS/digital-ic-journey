@@ -124,6 +124,59 @@ task disabled_write;
     end
 endtask
 
+task check_all_read_pairs;
+    input [8*48-1:0] name;
+    begin
+        for (i = 0; i < 4; i = i + 1) begin
+            for (j = 0; j < 4; j = j + 1) begin
+                read_addr_a = i[1:0];
+                read_addr_b = j[1:0];
+                check_read_pair(name);
+            end
+        end
+    end
+endtask
+
+task check_same_address_write_timing;
+    begin
+        write_register(2'b10, 4'b1010);
+        write_register(2'b11, 4'b1100);
+
+        @(negedge clk);
+        read_addr_a = 2'b10;
+        read_addr_b = 2'b11;
+        write_enable = 1'b1;
+        write_addr = 2'b10;
+        write_data = 4'b1111;
+
+        check_read_pair("same-address before edge sees old value");
+
+        @(posedge clk);
+        #1;
+        expected_regs[2] = 4'b1111;
+        check_read_pair("same-address after edge sees new value");
+        write_enable = 1'b0;
+    end
+endtask
+
+task check_reset_recovery;
+    begin
+        write_register(2'b00, 4'b0101);
+        write_register(2'b01, 4'b0110);
+        write_register(2'b10, 4'b1001);
+        write_register(2'b11, 4'b1111);
+
+        apply_reset;
+        check_all_read_pairs("reset recovery cleared read pair");
+
+        write_register(2'b00, 4'b0010);
+        write_register(2'b01, 4'b0100);
+        write_register(2'b10, 4'b1000);
+        write_register(2'b11, 4'b0001);
+        check_all_read_pairs("reset recovery rewrote read pair");
+    end
+endtask
+
 initial begin
     $dumpfile("sim/register_file4x4.vcd");
     $dumpvars(0, tb_register_file4x4);
@@ -138,12 +191,11 @@ initial begin
     read_addr_b = 2'b00;
 
     $display("============================================================");
-    $display("PREDICT BEFORE THE CHECKS RUN");
-    $display("1. After reset, what are r0, r1, r2, and r3?");
-    $display("2. With write_enable=0, should a posedge change storage?");
-    $display("3. If write_addr=2 and write_data=1010, which register changes?");
-    $display("4. Can read port A and B read two different registers at once?");
-    $display("5. If read and write use the same address, when does read data update?");
+    $display("PREDICT BEFORE THE DAY 2 CHECKS RUN");
+    $display("1. Why should expected_regs update after the clocked write event?");
+    $display("2. For same-address read/write, what does the read port show before the edge?");
+    $display("3. What does that same read port show shortly after the edge?");
+    $display("4. After reset recovery, should old nonzero values survive?");
     $display("============================================================");
 
     apply_reset;
@@ -178,13 +230,11 @@ initial begin
     read_addr_b = 2'b01;
     check_read_pair("overwrite r1 and read same register twice");
 
-    for (i = 0; i < 4; i = i + 1) begin
-        for (j = 0; j < 4; j = j + 1) begin
-            read_addr_a = i[1:0];
-            read_addr_b = j[1:0];
-            check_read_pair("exhaustive read address pair");
-        end
-    end
+    check_all_read_pairs("exhaustive read address pair");
+
+    check_same_address_write_timing;
+
+    check_reset_recovery;
 
     $display("============================================================");
     if (errors == 0)

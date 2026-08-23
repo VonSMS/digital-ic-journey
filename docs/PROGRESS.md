@@ -1,6 +1,6 @@
 # Project Progress
 
-Last updated: 2026-08-07
+Last updated: 2026-08-23
 
 ## Current Status
 
@@ -9,10 +9,18 @@ Last updated: 2026-08-07
 - Week 2 plan: one full conversation per day, five focused conversation-days
 - Week 2 warm-up: 2-to-4 decoder complete
 - Week 2 Day 1: 4x4 register file complete
-- Current conversation-day: Day 2, register file verification depth
-- Next module: stronger register file verification
-- Week 2 milestone: register file + ALU + result register + controller FSM
-- Week 3 milestone: signed INT8 multiplier and MAC
+- Week 2 Day 2: register file verification depth complete
+- Week 2 Day 5: signed INT8 multiplier complete
+- Week 2 Day 6: signed INT8 MAC complete
+- Current conversation-day: Day 7, INT8 processing element
+- Next module: INT8 processing element
+- Accelerated target: complete first signed INT8 2x2 matrix multiply hardware by
+  Day 8, then independently reproduce it on Day 9 using
+  `docs/int8_matrix_6_day_plan.md`
+- Week 2 milestone: register file + ALU + result register + controller FSM +
+  tiny execution unit
+- Week 3 milestone: signed INT8 multiplier + MAC + first 2x2 matrix multiply
+  hardware
 
 ## Week 1 Completed
 
@@ -47,17 +55,154 @@ Last updated: 2026-08-07
   - `tb_decoder2to4.v`: PASS
   - `tb_register_file4x4.v`: PASS
 
+## Verified on 2026-08-07
+
+- `tb_register_file4x4.v`: PASS with 116 checks after adding scoreboard timing,
+  same-address read/write timing, and reset recovery tests.
+- Intentional checker bug diagnosed: updating `expected_regs[2]` before the
+  write clock edge caused the first failure to show `expected=1111 actual=1010`
+  before the hardware had written the new value.
+- Observed same-address timing: before the write edge, read port A saw old `r2`
+  value `1010`; after the write edge plus a small delay, read port A saw new
+  `r2` value `1111`.
+- Regression rerun:
+  - `tb_simple_logic.v`: ran successfully
+  - `tb_adders.v`: PASS
+  - `tb_muxes.v`: PASS
+  - `tb_sequential.v`: PASS
+  - `tb_alu4.v`: PASS
+  - `tb_decoder2to4.v`: PASS
+  - `tb_register_file4x4.v`: PASS
+
+## Verified on 2026-08-08
+
+- Week 2 Day 3: controller FSM + result register complete.
+- Implemented `rtl/controller_fsm.v` with `IDLE -> EXECUTE -> DONE -> IDLE`
+  control flow, one-cycle `done`, `busy` in `EXECUTE`, and `capture_result` in
+  `EXECUTE`.
+- Implemented `rtl/result_register4.v` with reset and capture enable.
+- Implemented `tb/tb_controller_fsm.v` with self-checking coverage for reset,
+  one-cycle start, held start, start while busy, done duration, disabled
+  capture, and result capture enable.
+- Intentional checker bug diagnosed: compiling with
+  `-DINTENTIONAL_CHECKER_BUG` expected the FSM to remain in `EXECUTE` too long;
+  the first failure showed actual `state=10`, `done=1`, and `result_out=0010`,
+  confirming the RTL had correctly reached `DONE`.
+- Focused test:
+  - `tb_controller_fsm.v`: PASS with 21 checks
+- Regression rerun:
+  - `tb_simple_logic.v`: ran successfully
+  - `tb_adders.v`: PASS
+  - `tb_muxes.v`: PASS
+  - `tb_sequential.v`: PASS
+  - `tb_alu4.v`: PASS
+  - `tb_decoder2to4.v`: PASS
+  - `tb_register_file4x4.v`: PASS
+  - `tb_controller_fsm.v`: PASS
+
+## Verified on 2026-08-20
+
+- Week 2 Day 4: tiny execution unit complete.
+- Created unified teaching/lab file
+  `docs/week2_day4_tiny_execution_unit.md` with intuition notes, prediction
+  prompts, hands-on wiring tasks, debug exercise, commands, waveform checklist,
+  explain-back prompt, and completion criteria.
+- Implemented `rtl/tiny_execution_unit.v`, connecting the 4x4 register file,
+  ALU, controller FSM, and result register.
+- Implemented `tb/tb_tiny_execution_unit.v` with self-checking directed tests
+  for reset, disabled writes, held start behavior, `7+1`, `A+1`, `F+1`,
+  subtraction, XOR, result hold, and ALU-changing-without-capture behavior.
+- Intentional RTL bug confirmed with `-DINTENTIONAL_TINY_CAPTURE_BUG`: the first
+  failure showed the datapath result was already correct (`alu_result=8`) while
+  `result_out` had not captured yet, pointing to the capture/control path.
+- Fixed strict Verilog compatibility in `rtl/alu4.v` by making `negative` a wire
+  output driven by its existing continuous assignment.
+- Focused test:
+  - `tb_tiny_execution_unit.v`: PASS with 23 checks
+- Full regression rerun:
+  - `tb_simple_logic.v`: ran successfully
+  - `tb_adders.v`: PASS
+  - `tb_muxes.v`: PASS
+  - `tb_sequential.v`: PASS
+  - `tb_alu4.v`: PASS
+  - `tb_decoder2to4.v`: PASS
+  - `tb_register_file4x4.v`: PASS
+  - `tb_controller_fsm.v`: PASS
+  - `tb_tiny_execution_unit.v`: PASS
+
+## Verified on 2026-08-21
+
+- Week 2 Day 5: signed INT8 multiplier complete.
+- Created unified teaching/lab file
+  `docs/week2_day5_signed_int8_multiplier.md` with intuition notes, prediction
+  prompts, hands-on signed RTL tasks, debug exercise, commands, waveform
+  checklist, explain-back prompt, and completion criteria.
+- Implemented `rtl/int8_multiplier.v` with signed INT8 inputs and a signed
+  16-bit combinational product.
+- Implemented `tb/tb_int8_multiplier.v` with self-checking directed tests,
+  sampled signed cases, and exhaustive coverage for all 65536 signed INT8 input
+  pairs.
+- Intentional RTL bug confirmed with `-DINTENTIONAL_INT8_SIGN_BUG`: the first
+  failure showed `a=-7`, `b=3`, `product=747`, and `expected=-21`, pointing to
+  negative operands being interpreted as unsigned.
+- Focused test:
+  - `tb_int8_multiplier.v`: PASS with 65580 checks
+- Full regression rerun:
+  - `tb_simple_logic.v`: ran successfully
+  - `tb_adders.v`: PASS
+  - `tb_muxes.v`: PASS
+  - `tb_sequential.v`: PASS
+  - `tb_alu4.v`: PASS
+  - `tb_decoder2to4.v`: PASS
+  - `tb_register_file4x4.v`: PASS
+  - `tb_controller_fsm.v`: PASS
+  - `tb_tiny_execution_unit.v`: PASS
+  - `tb_int8_multiplier.v`: PASS
+
+## Verified on 2026-08-23
+
+- Week 2 Day 6: signed INT8 MAC complete.
+- Created unified teaching/lab file `docs/week2_day6_int8_mac.md` with
+  intuition notes, accumulator-width prediction prompts, hands-on RTL and
+  testbench tasks, debug exercise, commands, waveform checklist, explain-back
+  prompt, and completion criteria.
+- Implemented `rtl/int8_mac.v` with signed INT8 inputs, signed 16-bit product,
+  signed 18-bit accumulator, reset, clear, enable, hold behavior, and explicit
+  sign extension from product to accumulator width.
+- Implemented `tb/tb_int8_mac.v` with self-checking directed tests for reset,
+  clear, disabled enable, positive accumulation, negative accumulation, mixed
+  signs, and boundary products including repeated `-128 * -128` accumulation.
+- Intentional RTL bug confirmed with `-DINTENTIONAL_MAC_EXTEND_BUG`: the first
+  failure showed `product=-21` while `acc=65515` and `expected_acc=-21`,
+  pointing to zero-extension of a negative product before accumulation.
+- Focused test:
+  - `tb_int8_mac.v`: PASS with 15 checks
+- Full regression rerun:
+  - `tb_simple_logic.v`: ran successfully
+  - `tb_adders.v`: PASS
+  - `tb_muxes.v`: PASS
+  - `tb_sequential.v`: PASS
+  - `tb_alu4.v`: PASS
+  - `tb_decoder2to4.v`: PASS
+  - `tb_register_file4x4.v`: PASS
+  - `tb_controller_fsm.v`: PASS
+  - `tb_tiny_execution_unit.v`: PASS
+  - `tb_int8_multiplier.v`: PASS
+  - `tb_int8_mac.v`: PASS
+
 ## Known Issues
 
 - Some older modules warn about missing explicit time units.
 
 ## Exact Next Action
 
-Start Week 2 Day 2 by following the unified teaching and lab file
-`docs/week2_day2_register_file_verification.md`. Deepen
-`tb/tb_register_file4x4.v` verification with a golden model and scoreboard,
-including distinct writes to all registers, all 16 read-address pairs, disabled
-writes, overwrite, reset recovery, and same-address read/write timing. Use one
-intentional RTL bug for first-failure and GTKWave debugging practice, then fix
-it, rerun the focused test and regression, and document the observed timing
-behavior.
+Start Day 7 of the six-day INT8 matrix acceleration plan by reading
+`docs/int8_matrix_6_day_plan.md`, then creating and following one unified
+teaching and lab file `docs/week2_day7_int8_processing_element.md`. Teach a
+processing element as a multiplier plus accumulator plus control from intuition
+first, let the learner wire meaningful parts of `rtl/int8_processing_element.v`
+and `tb/tb_int8_processing_element.v`, test clear-before-dot-product, two-cycle
+dot product accumulation, enable timing, mixed signs, disabled hold, and
+boundary products, include one intentional clear/enable sequencing bug for
+first-failure and GTKWave debugging practice, then fix it and rerun the focused
+test and full regression.

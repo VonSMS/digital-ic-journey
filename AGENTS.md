@@ -13,7 +13,11 @@ status and the next action.
 
 - Explain intuition and signal flow before code.
 - Ask for predictions before simulation.
-- Prefer small hands-on edits over immediately showing a complete solution.
+- Prefer meaningful learner-written RTL/testbench sections over immediately
+  showing a complete solution.
+- Keep each day design-heavy: introduce a concrete hardware structure whenever
+  possible, and avoid spending a full day only reading or lightly extending
+  existing code unless it is necessary for correctness.
 - Use self-checking tests, intentional bugs, and the first FAIL as teaching tools.
 - Inspect relevant signals in GTKWave and ask for an explain-back.
 - Answer discussion in the user's language; keep repository materials in English.
