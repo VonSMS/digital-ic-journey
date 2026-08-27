@@ -1,11 +1,11 @@
 # Project Progress
 
-Last updated: 2026-08-26
+Last updated: 2026-08-27
 
 ## Current Status
 
 - Week 1: complete and regression-tested
-- Current phase: Week 2
+- Current phase: verified main project complete
 - Week 2 plan: one full conversation per day, five focused conversation-days
 - Week 2 warm-up: 2-to-4 decoder complete
 - Week 2 Day 1: 4x4 register file complete
@@ -14,8 +14,8 @@ Last updated: 2026-08-26
 - Week 2 Day 6: signed INT8 MAC complete
 - Week 2 Day 7: INT8 processing element complete
 - Week 2 Day 8: signed INT8 2x2 matrix multiply integration complete
-- Current conversation-day: Day 8 complete
-- Next module: independent INT8 matrix path reproduction
+- Current conversation-day: project summary and repository polish complete
+- Next module: optional independent INT8 matrix path reproduction cleanup
 - Accelerated target: complete first signed INT8 2x2 matrix multiply hardware by
   Day 8, then independently reproduce it on Day 9 using
   `docs/int8_matrix_6_day_plan.md`
@@ -23,6 +23,8 @@ Last updated: 2026-08-26
   tiny execution unit
 - Week 3 milestone: signed INT8 multiplier + MAC + first 2x2 matrix multiply
   hardware
+- Final verified portfolio milestone: signed INT8 2x2 matrix multiply
+  accelerator with self-checking regression
 
 ## Week 1 Completed
 
@@ -240,17 +242,27 @@ Last updated: 2026-08-26
   - `tb_int8_processing_element.v`: PASS
   - `tb_matmul2x2_int8.v`: PASS
 
+## Repository Polish on 2026-08-27
+
+- Revised `README.md` into a GitHub-facing completed-project overview.
+- Added `docs/PROJECT_SUMMARY.md` for portfolio, mentor, or interview review.
+- Added `scripts/run_regression.sh` to run the verified main regression path
+  with explicit Icarus Verilog compile commands.
+- Verified main project status remains complete through
+  `rtl/matmul2x2_int8.v` and `tb/tb_matmul2x2_int8.v`.
+- Ran `bash scripts/run_regression.sh`: PASS. Latest focused results include
+  `tb_int8_processing_element.v` PASS with 21 checks and
+  `tb_matmul2x2_int8.v` PASS with 5 checks.
+
 ## Known Issues
 
 - Some older modules warn about missing explicit time units.
+- Untracked reworked scratch files exist and are not part of the verified main
+  project until reviewed and fixed: `rtl/int8_PE_reworked.v`,
+  `rtl/int8_mul_reworked.v`, and `tb/tb_int8_mul_reworked.v`.
 
 ## Exact Next Action
 
-Start Day 9 by reading `docs/int8_matrix_6_day_plan.md`,
-`docs/week2_day7_int8_processing_element.md`, and
-`docs/week2_day8_int8_matmul2x2.md`, then create and follow one unified teaching
-and lab file `docs/week2_day9_independent_int8_matmul_reproduction.md` for
-independently reproducing the INT8 multiplier, MAC, processing element, and 2x2
-matrix multiply path from understanding, with self-checking tests, one
-self-found or intentional debug exercise, GTKWave inspection, focused tests, and
-full regression.
+Before committing, review the untracked reworked scratch files, decide whether
+to fix and include them or leave them out of the GitHub release, then run
+`bash scripts/run_regression.sh` and commit only the verified project files.

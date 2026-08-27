@@ -1,57 +1,87 @@
 # Digital IC Learning Journey
 
-This repository tracks a hands-on path through digital IC design, AI hardware,
-and computer architecture. The long-term direction is AI accelerators, RISC-V,
-hardware-software co-design, verification automation, and AI for EDA.
+A hands-on Verilog learning project that grows from basic digital logic into a
+small signed INT8 matrix-multiply accelerator.
 
-## Current Status
-
-Week 1 is complete. The repository contains combinational logic, adders,
-multiplexers, sequential logic, and an extended 4-bit ALU with self-checking
-verification. Week 2 builds a register file, controller FSM, and tiny execution
-unit. Signed INT8 multiplier and MAC work begins in Week 3.
-
-- Current verified status: [`docs/PROGRESS.md`](docs/PROGRESS.md)
-- Week 2 hands-on plan: [`docs/week2_plan.md`](docs/week2_plan.md)
-- Codex guidance and conversation handoff: [`AGENTS.md`](AGENTS.md)
-
-## Goal
-
-Before university begins, complete a readable RTL project that can be shown to
-mentors or research supervisors. The project will gradually cover:
-
-- Digital logic fundamentals
-- Verilog/SystemVerilog
-- Self-checking testbenches
-- Waveform debugging
-- Python golden models
-- Basic synthesis and resource analysis
-- INT8 multiply-accumulate hardware and small PE arrays
-
-## Week 1 Completed
-
-| Day | Work | Verified outcome |
-| --- | --- | --- |
-| Day 1 | Toolchain and repository setup | Git, Python, GCC, Icarus Verilog, GTKWave, and Yosys verified |
-| Day 2 | Binary, hexadecimal, two's complement, and Boolean logic | Notes, truth tables, and Python practice helper |
-| Day 3 | Minimal Verilog syntax and combinational logic | Simple logic RTL and testbench run successfully |
-| Day 4 | Half, full, and ripple-carry adders | Self-checking adder regression passes |
-| Day 5 | Direct and hierarchical multiplexers | Self-checking mux regression passes |
-| Day 6 | Flip-flop, register, counter, reset, and enable | Sequential regression passes |
-| Day 7 | Extended 4-bit ALU and flags | Directed tests and 512 ADD/SUB combinations pass |
-
-## Repository Structure
+The final verified design path is:
 
 ```text
-.
-+-- AGENTS.md      # Durable guidance for Codex conversations
-+-- docs/          # Study notes, progress, plans, and summaries
-+-- rtl/           # Verilog/SystemVerilog design files
-+-- tb/            # Testbenches
-+-- scripts/       # Tool checks and utility scripts
-+-- sim/           # Generated simulation outputs; usually not committed
-+-- README.md
+simple gates
+-> adders and muxes
+-> registers and counters
+-> 4-bit ALU with flags
+-> 4x4 register file
+-> controller FSM and result register
+-> tiny execution unit
+-> signed INT8 multiplier
+-> signed INT8 MAC
+-> INT8 processing element
+-> four-PE signed INT8 2x2 matrix multiply block
 ```
+
+## Highlights
+
+- Verilog RTL compatible with Icarus Verilog.
+- Self-checking testbenches with directed, boundary, and exhaustive cases where
+  practical.
+- VCD waveform generation for GTKWave inspection.
+- Intentional bug paths for debugging practice, including signed arithmetic,
+  accumulator extension, clear/enable priority, and handshake timing.
+- A small AI-accelerator-style datapath using four parallel processing elements
+  to compute signed INT8 2x2 matrix multiplication.
+
+## Final Accelerator
+
+The final module is `rtl/matmul2x2_int8.v`.
+
+It computes:
+
+```text
+C = A x B
+
+C00 = A00*B00 + A01*B10
+C01 = A00*B01 + A01*B11
+C10 = A10*B00 + A11*B10
+C11 = A10*B01 + A11*B11
+```
+
+Architecture:
+
+- Four `int8_processing_element` instances run in parallel.
+- Each PE contains a signed INT8 multiplier and signed 18-bit accumulator.
+- The controller FSM runs:
+
+```text
+IDLE -> CLEAR -> MAC0 -> MAC1 -> DONE -> IDLE
+```
+
+- `CLEAR` resets all PE accumulators before a new matrix multiply.
+- `MAC0` accumulates the `k=0` products.
+- `MAC1` accumulates the `k=1` products.
+- `DONE` indicates that all four matrix outputs are valid.
+
+## Verified Tests
+
+The project has been regression-tested through:
+
+| Testbench | Coverage focus |
+| --- | --- |
+| `tb_simple_logic.v` | basic gates and truth table behavior |
+| `tb_adders.v` | half adder, full adder, ripple-carry adders |
+| `tb_muxes.v` | direct and hierarchical muxes |
+| `tb_sequential.v` | DFF, register, counter, reset, enable |
+| `tb_alu4.v` | 4-bit ALU operations and flags, including ADD/SUB coverage |
+| `tb_decoder2to4.v` | one-hot decode behavior |
+| `tb_register_file4x4.v` | reset, writes, reads, same-address timing |
+| `tb_controller_fsm.v` | start/busy/done/capture sequencing |
+| `tb_tiny_execution_unit.v` | register file + ALU + controller datapath |
+| `tb_int8_multiplier.v` | signed INT8 multiplication, including exhaustive input pairs |
+| `tb_int8_mac.v` | clear, enable, signed extension, accumulation |
+| `tb_int8_processing_element.v` | two-cycle dot products and PE control |
+| `tb_matmul2x2_int8.v` | zero, identity, positive, mixed-sign, and boundary matrices |
+
+Detailed progress and verification notes are in
+[`docs/PROGRESS.md`](docs/PROGRESS.md).
 
 ## Quick Start
 
@@ -60,15 +90,63 @@ Open MSYS2 UCRT64 and run:
 ```bash
 cd /c/Users/14138/Documents/IC_design_project_2026/digital-ic-journey
 mkdir -p sim
-iverilog -g2012 -Wall -o sim/tb_alu4.vvp rtl/alu4.v tb/tb_alu4.v
-vvp sim/tb_alu4.vvp
+iverilog -Wall -o sim/tb_matmul2x2_int8.vvp rtl/int8_processing_element.v rtl/matmul2x2_int8.v tb/tb_matmul2x2_int8.v
+vvp sim/tb_matmul2x2_int8.vvp
 ```
 
-Expected final result:
+Expected final line:
 
 ```text
-PASS: all ALU tests passed
+PASS: all matmul2x2_int8 tests passed with 5 checks
 ```
 
-For a new conversation, ask Codex to read `AGENTS.md`, `docs/PROGRESS.md`, Git
-status, and the relevant RTL/testbench before continuing.
+To inspect the final waveform:
+
+```bash
+gtkwave sim/matmul2x2_int8.vcd
+```
+
+Recommended signals:
+
+```text
+clk, reset, start, busy, done, dut.state, c00, c01, c10, c11,
+PE inputs, PE products, and PE accumulators
+```
+
+To run the full verified regression:
+
+```bash
+bash scripts/run_regression.sh
+```
+
+## Repository Structure
+
+```text
+.
++-- AGENTS.md      # Durable guidance for Codex learning sessions
++-- docs/          # Teaching notes, progress logs, plans, and summaries
++-- rtl/           # Verilog RTL design files
++-- tb/            # Self-checking Verilog testbenches
++-- scripts/       # Tool checks and practice utilities
++-- sim/           # Generated simulation outputs, ignored by Git
++-- README.md
+```
+
+## Learning Notes
+
+Each learning day has a unified Markdown file under `docs/` with intuition,
+prediction prompts, hands-on tasks, debug exercises, waveform checklists,
+explain-back prompts, and completion criteria.
+
+Useful entry points:
+
+- [`docs/PROJECT_SUMMARY.md`](docs/PROJECT_SUMMARY.md)
+- [`docs/PROGRESS.md`](docs/PROGRESS.md)
+- [`docs/int8_matrix_6_day_plan.md`](docs/int8_matrix_6_day_plan.md)
+- [`docs/week2_day8_int8_matmul2x2.md`](docs/week2_day8_int8_matmul2x2.md)
+
+## Status
+
+The verified main learning path is complete through the signed INT8 2x2 matrix
+multiply accelerator. The repository is ready for review as an introductory
+digital IC and AI hardware learning portfolio.
