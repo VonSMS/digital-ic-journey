@@ -1,6 +1,6 @@
 # Project Progress
 
-Last updated: 2026-08-23
+Last updated: 2026-08-26
 
 ## Current Status
 
@@ -12,8 +12,10 @@ Last updated: 2026-08-23
 - Week 2 Day 2: register file verification depth complete
 - Week 2 Day 5: signed INT8 multiplier complete
 - Week 2 Day 6: signed INT8 MAC complete
-- Current conversation-day: Day 7, INT8 processing element
-- Next module: INT8 processing element
+- Week 2 Day 7: INT8 processing element complete
+- Week 2 Day 8: signed INT8 2x2 matrix multiply integration complete
+- Current conversation-day: Day 8 complete
+- Next module: independent INT8 matrix path reproduction
 - Accelerated target: complete first signed INT8 2x2 matrix multiply hardware by
   Day 8, then independently reproduce it on Day 9 using
   `docs/int8_matrix_6_day_plan.md`
@@ -190,19 +192,65 @@ Last updated: 2026-08-23
   - `tb_int8_multiplier.v`: PASS
   - `tb_int8_mac.v`: PASS
 
+## Verified on 2026-08-26
+
+- Week 2 Day 7: INT8 processing element complete.
+- Created unified teaching/lab file
+  `docs/week2_day7_int8_processing_element.md` with intuition notes,
+  prediction prompts, hands-on RTL and testbench tasks, an intentional
+  clear/enable priority debug exercise, commands, waveform checklist,
+  explain-back prompt, and completion criteria.
+- Implemented `rtl/int8_processing_element.v` with signed INT8 inputs, signed
+  16-bit product, signed 18-bit accumulator, reset, clear, enable, hold
+  behavior, and explicit sign extension.
+- Implemented `tb/tb_int8_processing_element.v` with self-checking tests for
+  reset, disabled hold, normal accumulation, clear-before-dot-product,
+  two-cycle dot products, mixed signs, and boundary products.
+- Intentional RTL bug confirmed with `-DINTENTIONAL_PE_CLEAR_ENABLE_BUG`: the
+  first failure showed `product=20` was correct while `acc=41` and
+  `expected_acc=0`, pointing to clear/enable priority rather than multiplier
+  arithmetic.
+- Week 2 Day 8: signed INT8 2x2 matrix multiply integration complete.
+- Created unified teaching/lab file `docs/week2_day8_int8_matmul2x2.md` with
+  matrix-index intuition, prediction prompts, hands-on integration tasks,
+  control-timing debug exercise, commands, waveform checklist, explain-back
+  prompt, and completion criteria.
+- Implemented `rtl/matmul2x2_int8.v` as a simple four-PE parallel matrix block
+  with `IDLE -> CLEAR -> MAC0 -> MAC1 -> DONE -> IDLE` control flow.
+- Implemented `tb/tb_matmul2x2_int8.v` with self-checking zero matrix, identity
+  matrix, positive matrix, mixed-sign matrix, and boundary-value tests.
+- Debugged a checker timing issue: the first matmul run produced correct
+  `c00-c11` values but checked one cycle after `DONE`, so `done=0`; moving the
+  check to the `DONE` cycle fixed the testbench.
+- Focused tests:
+  - `tb_int8_processing_element.v`: PASS with 18 checks
+  - `tb_matmul2x2_int8.v`: PASS with 5 checks
+- Full regression rerun:
+  - `tb_simple_logic.v`: ran successfully
+  - `tb_adders.v`: PASS
+  - `tb_muxes.v`: PASS
+  - `tb_sequential.v`: PASS
+  - `tb_alu4.v`: PASS
+  - `tb_decoder2to4.v`: PASS
+  - `tb_register_file4x4.v`: PASS
+  - `tb_controller_fsm.v`: PASS
+  - `tb_tiny_execution_unit.v`: PASS
+  - `tb_int8_multiplier.v`: PASS
+  - `tb_int8_mac.v`: PASS
+  - `tb_int8_processing_element.v`: PASS
+  - `tb_matmul2x2_int8.v`: PASS
+
 ## Known Issues
 
 - Some older modules warn about missing explicit time units.
 
 ## Exact Next Action
 
-Start Day 7 of the six-day INT8 matrix acceleration plan by reading
-`docs/int8_matrix_6_day_plan.md`, then creating and following one unified
-teaching and lab file `docs/week2_day7_int8_processing_element.md`. Teach a
-processing element as a multiplier plus accumulator plus control from intuition
-first, let the learner wire meaningful parts of `rtl/int8_processing_element.v`
-and `tb/tb_int8_processing_element.v`, test clear-before-dot-product, two-cycle
-dot product accumulation, enable timing, mixed signs, disabled hold, and
-boundary products, include one intentional clear/enable sequencing bug for
-first-failure and GTKWave debugging practice, then fix it and rerun the focused
-test and full regression.
+Start Day 9 by reading `docs/int8_matrix_6_day_plan.md`,
+`docs/week2_day7_int8_processing_element.md`, and
+`docs/week2_day8_int8_matmul2x2.md`, then create and follow one unified teaching
+and lab file `docs/week2_day9_independent_int8_matmul_reproduction.md` for
+independently reproducing the INT8 multiplier, MAC, processing element, and 2x2
+matrix multiply path from understanding, with self-checking tests, one
+self-found or intentional debug exercise, GTKWave inspection, focused tests, and
+full regression.
